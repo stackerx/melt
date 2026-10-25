@@ -16,7 +16,7 @@
             font-size: 13px;
         }
         .container {
-            max-width: 450px;
+            max-width: 480px;
             width: 100%;
             background: #ffffff;
             padding: 15px 20px;
@@ -112,7 +112,7 @@
     
     <div id="apiStatus" class="status-box loading">Initializing distributed asset feed...</div>
 
-    <h2>US Coin Melt Values</h2>
+    <h2>US Coin Melt Values (Circulated)</h2>
     
     <div class="input-group">
         <label for="spotPrice">Current Spot Price (USD / oz):</label>
@@ -124,54 +124,64 @@
             <tr>
                 <th>Coin Type</th>
                 <th>Silver Weight</th>
-                <th style="text-align: right;">Melt Value</th>
+                <th>Copper Weight</th>
+                <th style="text-align: right;">Total Melt Value</th>
             </tr>
         </thead>
         <tbody>
-            <tr data-weight="1.0000">
+            <tr data-silver="1.0000" data-copper="0.0000">
                 <td>American Eagle</td>
                 <td>1.0000 oz</td>
+                <td>0.0000 g</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-weight="0.7734">
-                <td>Silver Dollar</td>
+            <tr data-silver="0.7734" data-copper="2.6700">
+                <td>Silver Dollar (Morgan/Peace)</td>
                 <td>0.7734 oz</td>
+                <td>2.6700 g</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-weight="0.3617">
-                <td>Half Dollar (90%)</td>
-                <td>0.3617 oz</td>
+            <tr data-silver="0.3575" data-copper="1.2354">
+                <td>Half Dollar (90% Junk)</td>
+                <td>0.3575 oz</td>
+                <td>1.2354 g</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-weight="0.1808">
-                <td>Quarter</td>
-                <td>0.1808 oz</td>
+            <tr data-silver="0.1788" data-copper="0.6177">
+                <td>Quarter (90% Junk)</td>
+                <td>0.1788 oz</td>
+                <td>0.6177 g</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-weight="0.0723">
-                <td>Dime</td>
-                <td>0.0723 oz</td>
+            <tr data-silver="0.0715" data-copper="0.2471">
+                <td>Dime (90% Junk)</td>
+                <td>0.0715 oz</td>
+                <td>0.2471 g</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-weight="0.1479">
-                <td>Half Dollar (40%)</td>
+            <tr data-silver="0.1479" data-copper="7.0000">
+                <td>Half Dollar (40% Kennedy)</td>
                 <td>0.1479 oz</td>
+                <td>7.0000 g</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-weight="0.0563">
-                <td>War Nickel</td>
+            <tr data-silver="0.0563" data-copper="2.8100">
+                <td>War Nickel (35%)</td>
                 <td>0.0563 oz</td>
+                <td>2.8100 g</td>
                 <td class="val">-</td>
             </tr>
         </tbody>
     </table>
 
     <p class="footer-note">
-        * Calculations are based strictly on pure uncirculated metal content weight specifications outlined by the US Mint.
+        * 90% silver coin estimates account for regular circulation wear (the 0.715 rule). Melt values include copper content valued at a benchmark of $6.51/lb ($0.01435/g).
     </p>
 </div>
 
 <script>
+    const COPPER_PRICE_PER_GRAM = 0.014352; // Derived from $6.51 per pound
+
     async function fetchLiveSilverPrice() {
         const statusBox = document.getElementById('apiStatus');
         const priceInput = document.getElementById('spotPrice');
@@ -200,14 +210,19 @@
     }
 
     function calculateMeltValues() {
-        const spot = parseFloat(document.getElementById('spotPrice').value);
-        if (isNaN(spot) || spot <= 0) return;
+        const silverSpot = parseFloat(document.getElementById('spotPrice').value);
+        if (isNaN(silverSpot) || silverSpot <= 0) return;
 
         const rows = document.querySelectorAll('tbody tr');
         rows.forEach(row => {
-            const weight = parseFloat(row.getAttribute('data-weight'));
-            const meltValue = spot * weight;
-            row.querySelector('.val').innerText = '$' + meltValue.toFixed(2);
+            const silverWeight = parseFloat(row.getAttribute('data-silver'));
+            const copperWeight = parseFloat(row.getAttribute('data-copper'));
+            
+            const silverValue = silverSpot * silverWeight;
+            const copperValue = COPPER_PRICE_PER_GRAM * copperWeight;
+            
+            const totalMeltValue = silverValue + copperValue;
+            row.querySelector('.val').innerText = '$' + totalMeltValue.toFixed(2);
         });
     }
 
