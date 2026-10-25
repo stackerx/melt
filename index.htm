@@ -134,7 +134,7 @@
                 <th style="text-align: right;">Total Melt Value</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="coinTableBody">
             <tr data-silver="1.0000" data-copper="0.0000">
                 <td>American Eagle</td>
                 <td>1.0000 oz</td>
@@ -155,14 +155,14 @@
                 <td>0.1788 oz</td>
                 <td class="val">-</td>
             </tr>
-            <tr data-silver="0.0715" data-copper="0.2471">
-                <td>Dime (90% Junk)</td>
-                <td>0.0715 oz</td>
-                <td class="val">-</td>
-            </tr>
             <tr data-silver="0.1479" data-copper="7.0000">
                 <td>Half Dollar (40% Kennedy)</td>
                 <td>0.1479 oz</td>
+                <td class="val">-</td>
+            </tr>
+            <tr data-silver="0.0715" data-copper="0.2471">
+                <td>Dime (90% Junk)</td>
+                <td>0.0715 oz</td>
                 <td class="val">-</td>
             </tr>
             <tr data-silver="0.0563" data-copper="2.8100">
@@ -174,7 +174,7 @@
     </table>
 
     <p class="footer-note">
-        * 90% silver coin estimates account for regular circulation wear (the 0.715 rule). Melt values silently include base copper content valued at a benchmark of $6.51/lb ($0.01435/g).
+        * 90% silver coin estimates account for regular circulation wear (the 0.715 rule). Melt values silently include base copper content valued at a benchmark of $6.51/lb ($0.01435/g). Rows are automatically ordered by descending value.
     </p>
 </div>
 
@@ -226,7 +226,10 @@
         const silverSpot = parseFloat(document.getElementById('spotPrice').value);
         if (isNaN(silverSpot) || silverSpot <= 0) return;
 
-        const rows = document.querySelectorAll('tbody tr');
+        const tbody = document.getElementById('coinTableBody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        // Calculate and cache total value on each row object
         rows.forEach(row => {
             const silverWeight = parseFloat(row.getAttribute('data-silver'));
             const copperWeight = parseFloat(row.getAttribute('data-copper'));
@@ -235,8 +238,17 @@
             const copperValue = COPPER_PRICE_PER_GRAM * copperWeight;
             
             const totalMeltValue = silverValue + copperValue;
+            row.setAttribute('data-calculated-value', totalMeltValue);
             row.querySelector('.val').innerText = '$' + totalMeltValue.toFixed(2);
         });
+
+        // Sort rows by descending total value
+        rows.sort((a, b) => {
+            return parseFloat(b.getAttribute('data-calculated-value')) - parseFloat(a.getAttribute('data-calculated-value'));
+        });
+
+        // Re-append sorted rows to DOM
+        rows.forEach(row => tbody.appendChild(row));
         
         updateTimestamp();
     }
