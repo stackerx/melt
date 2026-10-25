@@ -28,7 +28,13 @@
             color: #2c3e50;
             margin-top: 0;
             font-size: 18px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        .timestamp {
+            text-align: center;
+            font-size: 11px;
+            color: #718096;
+            margin-bottom: 12px;
         }
         h2 {
             text-align: center;
@@ -109,6 +115,7 @@
 
 <div class="container">
     <h1>Silver Market Tracker</h1>
+    <div id="timestamp" class="timestamp">Last calculated: Just now</div>
     
     <div id="apiStatus" class="status-box loading">Initializing distributed asset feed...</div>
 
@@ -174,6 +181,20 @@
 <script>
     const COPPER_PRICE_PER_GRAM = 0.014352; // Derived from $6.51 per pound
 
+    function updateTimestamp() {
+        const now = new Date();
+        const options = { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            timeZoneName: 'short' 
+        };
+        document.getElementById('timestamp').innerText = 'Last calculated: ' + now.toLocaleString('en-US', options);
+    }
+
     async function fetchLiveSilverPrice() {
         const statusBox = document.getElementById('apiStatus');
         const priceInput = document.getElementById('spotPrice');
@@ -216,6 +237,8 @@
             const totalMeltValue = silverValue + copperValue;
             row.querySelector('.val').innerText = '$' + totalMeltValue.toFixed(2);
         });
+        
+        updateTimestamp();
     }
 
     window.onload = fetchLiveSilverPrice;
